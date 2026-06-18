@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teample Hub - 팀플을 쉽고 예쁘게 💛💖</title>
+  <!-- Google Fonts: Plus Jakarta Sans for English, Pretendard for Korean -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css" />
+  <!-- Lucide Icons for clean, modern iconography -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Decorative Background Blobs -->
+  <div class="blob-bg blob-yellow"></div>
+  <div class="blob-bg blob-pink"></div>
+
+  <div class="app-container">
+    <!-- App Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-icon">✨</span>
+        <h1>Teample <span class="highlight-pink">Hub</span></h1>
+      </div>
+      <p class="subtitle">대학생 팀플을 위한 상큼한 역할 분배 & 회의 시간 조율기 💛💖</p>
+      
+      <!-- Tab Navigation -->
+      <nav class="app-nav">
+        <button class="nav-btn active" id="tab-role-btn" onclick="switchTab('role')">
+          <i data-lucide="users-round"></i>
+          <span>역할 분배</span>
+        </button>
+        <button class="nav-btn" id="tab-time-btn" onclick="switchTab('time')">
+          <i data-lucide="calendar-days"></i>
+          <span>회의 시간 조율</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Global Team Management Bar -->
+    <section class="team-section card animate-fade-in">
+      <div class="card-header">
+        <div class="header-title">
+          <i data-lucide="users" class="icon-pink"></i>
+          <h2>우리 팀원 목록</h2>
+          <span class="member-count" id="member-count">0명</span>
+        </div>
+        <form id="add-member-form" class="add-member-form" onsubmit="addMember(event)">
+          <div class="input-wrapper">
+            <input type="text" id="member-name-input" placeholder="새 팀원 이름 입력..." required maxlength="8">
+            <button type="submit" class="btn-add-member" aria-label="팀원 추가">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="member-tags-container" id="member-tags-container">
+        <!-- Temporary placeholder or empty state -->
+        <p class="empty-text" id="empty-members-text">팀원을 추가하여 시작해 보세요! 🙋‍♀️🙋‍♂️</p>
+      </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <main class="app-content">
+      
+      <!-- TAB 1: Role Distribution -->
+      <div id="tab-role" class="tab-content active animate-fade-in">
+        <div class="section-actions">
+          <div class="section-title-group">
+            <h3>📌 역할 분배 보드</h3>
+            <p>각 팀원의 역할을 지정하고 할 일을 체크리스트로 관리하세요.</p>
+          </div>
+          <div class="actions-button-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="autoDistributeRoles()" id="btn-auto-distribute">
+              <i data-lucide="sparkles"></i>
+              <span>🎲 역할 자동 분배</span>
+            </button>
+            <button class="btn btn-primary" onclick="createNewRoleCard()">
+              <i data-lucide="plus-circle"></i>
+              <span>새 역할 추가</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="role-grid" id="role-grid">
+          <!-- Role cards will be generated here -->
+        </div>
+      </div>
+
+      <!-- TAB 2: Meeting Time Finder -->
+      <div id="tab-time" class="tab-content animate-fade-in">
+        <div class="time-coordinator-layout">
+          
+          <!-- Left Column: Timetable Grid -->
+          <div class="time-grid-panel card">
+            <div class="time-panel-header">
+              <div class="selector-group">
+                <label for="schedule-selector" class="control-label">📆 시간표 모드:</label>
+                <div class="custom-select-wrapper">
+                  <select id="schedule-selector" onchange="handleScheduleModeChange()">
+                    <option value="heatmap">🔥 전체 팀원 시간표 (히트맵)</option>
+                    <!-- Member options will be added dynamically -->
+                  </select>
+                </div>
+              </div>
+              <div class="mode-info" id="mode-info-box">
+                <span class="badge badge-yellow">히트맵 뷰</span>
+                <p class="info-text">겹치는 시간이 많을수록 셀이 화사한 핑크-노란색으로 칠해집니다!</p>
+              </div>
+            </div>
+
+            <!-- Timetable Element -->
+            <div class="timetable-scroll-container">
+              <div class="timetable" id="timetable">
+                <!-- Headers (Days) -->
+                <div class="time-header-cell">시간</div>
+                <div class="time-header-cell day-col" data-day="0">월</div>
+                <div class="time-header-cell day-col" data-day="1">화</div>
+                <div class="time-header-cell day-col" data-day="2">수</div>
+                <div class="time-header-cell day-col" data-day="3">목</div>
+                <div class="time-header-cell day-col" data-day="4">금</div>
+                <div class="time-header-cell day-col" data-day="5" style="color: #FF5E7E;">토</div>
+                <div class="time-header-cell day-col" data-day="6" style="color: #FF2E93;">일</div>
+
+                <!-- Grid cells will be generated dynamically (09:00 - 24:00) -->
+              </div>
+            </div>
+
+            <div class="timetable-actions" id="timetable-actions">
+              <button class="btn btn-outline" id="btn-reset-schedule" onclick="resetCurrentSchedule()" style="display: none;">
+                <i data-lucide="rotate-ccw"></i>
+                <span>초기화</span>
+              </button>
+              <button class="btn btn-secondary" id="btn-save-schedule" onclick="saveCurrentSchedule()" style="display: none;">
+                <i data-lucide="check"></i>
+                <span>스케줄 저장</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Results & Recommendations -->
+          <div class="time-results-panel">
+            <!-- Recommendation Card -->
+            <div class="card recommend-card animate-slide-up">
+              <div class="card-title-group">
+                <i data-lucide="sparkles" class="icon-yellow font-effect-spin"></i>
+                <h3>✨ 추천 회의 시간 Top 3</h3>
+              </div>
+              <p class="card-desc">가장 많은 팀원이 참가할 수 있는 최적의 시간대를 선정했습니다.</p>
+              <div class="recommend-list" id="recommend-list">
+                <!-- Recommended slots will be generated here -->
+                <div class="empty-state">
+                  <p>팀원들의 가능한 시간대를 입력하면<br>최적의 회의 시간이 계산됩니다. 🔍</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Share & Clipboard Summary Card -->
+            <div class="card share-card animate-slide-up" style="animation-delay: 0.1s;">
+              <div class="card-title-group">
+                <i data-lucide="share-2" class="icon-pink"></i>
+                <h3>📋 조율 결과 공유하기</h3>
+              </div>
+              <p class="card-desc">팀의 역할 분담과 회의 추천 시간을 텍스트로 깔끔하게 복사해보세요.</p>
+              
+              <div class="summary-preview-box">
+                <textarea id="summary-text" class="summary-textarea" readonly placeholder="회의 결과 요약이 여기에 표시됩니다..."></textarea>
+              </div>
+              
+              <button class="btn btn-primary btn-block" onclick="copySummaryToClipboard()">
+                <i data-lucide="copy"></i>
+                <span>결과 요약 복사하기</span>
+              </button>
+            </div>
+
+            <!-- Input Status Card -->
+            <div class="card status-card animate-slide-up" style="animation-delay: 0.2s;">
+              <div class="card-title-group">
+                <i data-lucide="clipboard-check" class="icon-blue"></i>
+                <h3>👥 팀원별 시간 입력 현황</h3>
+              </div>
+              <div class="status-list" id="status-list">
+                <!-- Member input status checkmarks will be shown here -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+      <span id="toast-message">메시지</span>
+    </div>
+  </div>
+
+  <!-- Lucide Icon Initialize -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+  <!-- Custom JS -->
+  <script src="app.js"></script>
+</body>
+</html>
